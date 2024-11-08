@@ -1,25 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import "./app.css";
+import WelcomeScreen from "./components/WelcomeScreen";
+import SurveyQuestion from "./components/SurveyQuestion";
+import ThankYouScreen from "./components/ThankYouScreen";
+import { setSessionCompleted, isSessionCompleted } from "./utils/storage";
 
-function App() {
+const App = () => {
+  const [screen, setScreen] = useState(
+    isSessionCompleted() ? "thankYou" : "welcome"
+  );
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+
+  const startSurvey = () => setScreen("survey");
+  const goNext = () => setCurrentQuestion((prev) => prev + 1);
+  const goPrev = () => setCurrentQuestion((prev) => prev - 1);
+
+  const submitSurvey = () => {
+    setSessionCompleted();
+    setScreen("thankYou");
+  };
+
+  const restartSurvey = () => {
+    localStorage.clear();
+    setCurrentQuestion(0);
+    setScreen("welcome");
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {screen === "welcome" && <WelcomeScreen onStart={startSurvey} />}
+      {screen === "survey" && (
+        <SurveyQuestion
+          current={currentQuestion}
+          onNext={goNext}
+          onPrev={goPrev}
+          onSubmit={submitSurvey}
+        />
+      )}
+      {screen === "thankYou" && <ThankYouScreen onRestart={restartSurvey} />}
     </div>
   );
-}
+};
 
 export default App;
